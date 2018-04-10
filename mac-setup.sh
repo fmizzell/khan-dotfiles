@@ -249,6 +249,12 @@ update_git() {
     fi
 }
 
+install_brew_python() {
+    if ! brew ls python >/dev/null 2>&1; then
+        brew install python@2 2>&1
+    fi
+}
+
 install_node() {
     if ! brew ls node >/dev/null 2>&1; then
         brew install node 2>&1
@@ -345,6 +351,7 @@ register_ssh_keys
 install_gcc
 install_homebrew
 install_slack
+install_brew_python
 update_git
 install_node
 install_phantomjs
