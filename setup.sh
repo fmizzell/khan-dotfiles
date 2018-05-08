@@ -253,6 +253,43 @@ install_deps() {
     fi
 }
 
+install_and_setup_gcloud() {
+    if ! which gcloud >/dev/null; then
+        echo "Installing Google Cloud SDK (gcloud)"
+        # On mac, we could alternately do `brew install google-cloud-sdk`,
+        # but we need this code for linux anyway, so we might as well be
+        # consistent across platforms; this also makes dotfiles simpler.
+        version=192.0.0  # should match webapp's MAX_SUPPORTED_VERSION
+        platform="$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m)"
+        gcloud_url="https://storage.googleapis.com/cloud-sdk-release/google-cloud-sdk-$version-$platform.tar.gz"
+        local_archive_filename=/tmp/gcloud-$version.tar.gz
+        curl "$gcloud_url" >$local_archive_filename
+        (
+            cd "$DEVTOOLS_DIR"
+            rm -rf google-cloud-sdk  # just in case an old one is hanging out
+            tar -xkzf $local_archive_filename
+        )
+        # This is added to PATh by dotfiles, but those may not be sourced yet.
+        PATH="$DEVTOOLS_DIR/google-cloud-sdk/bin:$PATH"
+    fi
+
+    if [ -z "$(gcloud auth list --format='value(account)')" ]; then
+        echo "You'll now need to log in to gcloud.  This will open a browser;"
+        echo "log in and/or select your Khan Google account, and click allow."
+        echo -n "We'll need to do this twice. Press enter to start: "
+        read
+        gcloud auth login
+        gcloud auth application-default login
+    fi
+}
+
+download_db_dump() {
+    if ! [ -f "$REPOS_DIR/webapp/datastore/current.sqlite" ]; then
+        echo "Downloading a recent datastore dump"
+        ( cd "$REPOS_DIR/webapp" ; make current.sqlite )
+    fi
+}
+
 # Make sure we store userinfo so we can pass appropriately when ka-cloning.
 update_userinfo() {
     echo "Updating your git user info"
@@ -307,6 +344,8 @@ edit_system_config
 clone_repos
 install_deps        # pre-req: clone_repos
 install_hooks       # pre-req: clone_repos
+install_and_setup_gcloud
+download_db_dump    # pre-reqs: install_and_setup_gcloud, install_deps
 
 
 echo
