@@ -127,25 +127,6 @@ EOF
     # Make sure we have the most up-to-date version of npm
     sudo npm install -g npm
 
-    # Get the latest slack deb file and install it.
-    if ! which slack >/dev/null 2>&1 ; then
-        case `uname -m` in
-            *86) arch=i386;;
-            x86_64) arch=amd64;;
-            *) echo "WARNING: Cannot install slack: no client for `uname -m`";;
-        esac
-        if [ -n "$arch" ]; then
-            rm -rf /tmp/slack.deb
-            deb_url="$(wget -O- https://slack.com/downloads/instructions/ubuntu | grep -o 'https.*\.deb' | head -n1)"
-            if [ -n "$deb_url" ]; then
-                wget -O/tmp/slack.deb "$deb_url" || echo "WARNING: Cannot install slack: couldn't download $deb_url"
-                sudo dpkg -i /tmp/slack.deb
-            else
-                echo "WARNING: Cannot install slack: couldn't find .deb URL"
-            fi
-        fi
-    fi
-
     # Not technically needed to develop at Khan, but we assume you have it.
     sudo apt-get install -y unrar virtualbox ack-grep
 
@@ -183,6 +164,8 @@ install_protoc() {
     # installs the protocol buffer compiler (which generates python & java code
     # from the protocol buffer definitions), as well as a go-based compiler
     # plugin that allows us to generate bigquery schemas as well.
+
+    sudo apt-get install -y zip
 
     if ! which protoc >/dev/null; then
         # TODO(colin): I didn't see a good-looking ppa for the protbuf compiler.

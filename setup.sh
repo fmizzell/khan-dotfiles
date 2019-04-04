@@ -231,8 +231,6 @@ clone_repos() {
 # Must have cloned the repos first.
 install_deps() {
     echo "Installing virtualenv and any global dependencies"
-    # pip is a nicer installer/package manager than easy-install.
-    sudo easy_install --quiet pip
 
     # Install virtualenv.
     # https://docs.google.com/document/d/1zrmm6byPImfbt7wDyS8PpULwnEckSxna2jhSl38cWt8
@@ -246,12 +244,11 @@ install_deps() {
     # Activate the virtualenv.
     . ~/.virtualenv/khan27/bin/activate
 
-    # Install all the requirements for khan
-    # This also installs npm deps.
+    # Install all the Python requirements for khan
     if [ "$WEBAPP" = true ]; then
-        echo "Installing webapp dependencies"
+        echo "Installing webapp Python dependencies"
         # This checks for gcloud, so we do it after install_and_setup_gcloud.
-        ( cd "$REPOS_DIR/webapp" && make install_deps )
+        ( cd "$REPOS_DIR/webapp" && make python_deps )
     fi
 
     echo "Installing yarn"
@@ -285,26 +282,6 @@ install_and_setup_gcloud() {
         read
         gcloud auth login
         gcloud auth application-default login
-    fi
-
-    echo "Ensuring gcloud is up to date and has the right components."
-    gcloud components update --version="$version"
-    # The components we install:
-    # - app-engine-java: used by kotlin dev servers
-    # - app-engine-python: not strictly necessary (since we package it into
-    #   frankenserver) but potentially useful
-    # - bq: biquery tool used by webapp and many humans
-    # - cloud-datastore-emulator: used by all dev servers (or rather will be
-    #   "soon" as of March 2019)
-    # - gsutil: GCS client used by "make current.sqlite" and sometimes humans
-    gcloud components install app-engine-java app-engine-python \
-        bq cloud-datastore-emulator gsutil
-}
-
-download_db_dump() {
-    if ! [ -f "$REPOS_DIR/webapp/datastore/current.sqlite" ]; then
-        echo "Downloading a recent datastore dump"
-        ( cd "$REPOS_DIR/webapp" ; make current.sqlite )
     fi
 }
 
@@ -382,7 +359,6 @@ install_and_setup_gcloud
 install_deps        # pre-reqs: clone_repos, install_and_setup_gcloud
 install_hooks       # pre-req: clone_repos
 setup_arc           # pre-req: clone_repos
-download_db_dump    # pre-req: install_deps
 
 
 echo
