@@ -279,17 +279,26 @@ update_git() {
 }
 
 install_node() {
-    if ! brew ls node >/dev/null 2>&1; then
+    if ! brew ls node --versions |grep 8; then
+        brew uninstall node
         # Install node 8: webapp doesn't (yet!) work with node 10.
         # (Node 8 is LTS.)
         brew install node@8
+
         # We need this because brew doesn't link /usr/local/bin/node
         # by default when installing non-latest node.
-        brew link --force node@8
+        brew link --force --overwrite node@8
     fi
 }
 
 install_postgresql() {
+    # to unstall icu4c@63.x version becasue postgres needs a v64.x
+    # more detail can be found at slack chat:
+    # https://khanacademy.slack.com/archives/C8Y4Q1E0J/p1560792688074600
+    if brew ls icu4c --versions |grep "icu4c 63"; then
+        brew uninstall --ignore-dependencies icu4c
+    fi
+
     if ! brew ls postgresql >/dev/null 2>&1; then
         info "Installing postgresql\n"
         brew install postgresql@11
@@ -480,8 +489,8 @@ install_gcc
 install_homebrew
 install_slack
 update_git
-install_node
 install_postgresql
+install_node
 install_nginx
 install_image_utils
 install_helpful_tools
