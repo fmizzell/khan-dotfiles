@@ -262,7 +262,13 @@ install_deps() {
         ( cd "$REPOS_DIR/webapp" && make install_deps )
     fi
 
+    # Inspiration from this slack discussion
+    # https://khanacademy.slack.com/archives/C0918TZ5G/p1560899833202100
+    # In general, need to pin npm to V6.4.1, and need to clean cache
+    # before to install yarn.
     echo "Installing yarn"
+    sudo npm install -g npm@6.4.1
+    sudo npm cache clean
     sudo npm install -g yarn
 
     # Used by various infra projects for managing python3 environment
