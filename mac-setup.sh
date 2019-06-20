@@ -279,8 +279,7 @@ update_git() {
 }
 
 install_node() {
-    if ! brew ls node --versions |grep 8; then
-        brew uninstall node
+    if ! brew ls node >/dev/null 2>&1; then
         # Install node 8: webapp doesn't (yet!) work with node 10.
         # (Node 8 is LTS.)
         brew install node@8
@@ -489,8 +488,8 @@ install_gcc
 install_homebrew
 install_slack
 update_git
-install_postgresql
 install_node
+install_postgresql
 install_nginx
 install_image_utils
 install_helpful_tools
