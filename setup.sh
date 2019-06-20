@@ -254,6 +254,15 @@ install_deps() {
     # Activate the virtualenv.
     . ~/.virtualenv/khan27/bin/activate
 
+    # Inspiration from this slack discussion
+    # https://khanacademy.slack.com/archives/C0918TZ5G/p1560899833202100
+    # In general, need to pin npm to V6.4.1
+    # Also, need to install yarn first before run `make install_deps`
+    # in webapp.
+    echo "Installing yarn"
+    sudo npm install -g npm@6.4.1
+    sudo npm install -g yarn
+
     # Install all the requirements for khan
     # This also installs npm deps.
     if [ "$WEBAPP" = true ]; then
@@ -261,15 +270,6 @@ install_deps() {
         # This checks for gcloud, so we do it after install_and_setup_gcloud.
         ( cd "$REPOS_DIR/webapp" && make install_deps )
     fi
-
-    # Inspiration from this slack discussion
-    # https://khanacademy.slack.com/archives/C0918TZ5G/p1560899833202100
-    # In general, need to pin npm to V6.4.1, and need to clean cache
-    # before to install yarn.
-    echo "Installing yarn"
-    sudo npm install -g npm@6.4.1
-    sudo npm cache clean
-    sudo npm install -g yarn
 
     # Used by various infra projects for managing python3 environment
     echo "Installing pipenv"
