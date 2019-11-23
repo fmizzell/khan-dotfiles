@@ -40,5 +40,11 @@ if [ `uname -s` = Darwin ]; then
         export CPPFLAGS CFLAGS ARCHFLAGS
     fi
     # We use the timeout command a lot, but os x calls it `gtimeout`.
+
+    export LDFLAGS="-L/usr/local/opt/openssl/lib $LDFLAGS"
+    export CPPFLAGS="-I/usr/local/opt/openssl/include $CPPFLAGS"
+    export DYLD_LIBRARY_PATH="/usr/local/opt/openssl/lib:$DYLD_LIBRARY_PATH"
+    PKG_CONFIG_PATH="/usr/local/opt/openssl/lib/pkgconfig"
+
     alias timeout=gtimeout
 fi
