@@ -18,6 +18,9 @@ export PATH="$KA_DEVROOT/ka-clone/bin:$PATH"
 export PATH="$KA_DEVROOT/khan-linter/bin:$PATH"
 export PATH="$KA_DEVROOT/google-cloud-sdk/bin:$PATH"
 
+export MANPATH="$KA_DEVROOT/our-lovely-cli/man:$MANPATH"
+
+
 # Add our go-binaries home to PATH.
 # TODO(csilvers): move this back above the devtools ones after we get
 # rid of khan-linter.
