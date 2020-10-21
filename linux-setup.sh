@@ -150,13 +150,23 @@ EOF
         nodejs=12* \
         nginx \
         redis-server \
-        curl
+        curl \
+        jq
 
     # There are two different php packages, depending on if you're on Ubuntu
     # 14.04 LTS or 16.04 LTS, and neither version has both.  So we just try
     # both of them.  In 16.04+, php-xml is also a separate package, which we
     # need too.
     sudo apt install -y php-cli php-curl php-xml || sudo apt-get install -y php5-cli php5-curl
+
+    # We need npm 6 or greater to support node12.  That's the default
+    # for nodejs, but we may have overridden it before in a way that
+    # makes it impossible to upgrade, so we reinstall nodejs if our
+    # npm version is 5.x.x.
+    if expr "`npm --version`" : 5 >/dev/null 2>&1; then
+        sudo apt-get purge -y nodejs
+        sudo apt-get install -y "nodejs=12*"
+    fi
 
     # Ubuntu installs as /usr/bin/nodejs but the rest of the world expects
     # it to be `node`.
@@ -172,7 +182,9 @@ EOF
     fi
     # Make sure we have the preferred version of npm
     # TODO(benkraft): Pull this version number from webapp somehow.
-    sudo npm install -g npm@5.6.0
+    # We need npm 6 or greater to support node12. This is a particular npm6
+    # version known to work.
+    sudo npm install -g npm@6.14.4
 
     # Get the latest slack deb file and install it.
     if ! which slack >/dev/null 2>&1 ; then

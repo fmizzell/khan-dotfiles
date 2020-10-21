@@ -229,6 +229,10 @@ install_homebrew() {
     success "Updating (but not upgrading) Homebrew"
     brew update > /dev/null
 
+    # Install homebrew-cask, so we can use it manage installing binary/GUI apps
+    # brew tap caskroom/cask
+
+    # Likely need an alternate versions of Casks in order to install chrome-canary
     # Required to install chrome-canary
     brew tap homebrew/cask-versions
 
@@ -454,6 +458,16 @@ install_openssl() {
     done
 }
 
+install_jq() {
+    info "Checking for jq\n"
+    if ! which jq  >/dev/null 2>&1; then
+        info "Installing jq\n"
+        brew install jq
+    else
+        success "jq already installed"
+    fi
+}
+
 install_protoc() {
     # If the user has a homebrew version of protobuf installed, uninstall it so
     # we can manually install our own version in /usr/local.
@@ -573,6 +587,7 @@ install_gcc
 install_homebrew
 install_wget
 install_openssl
+install_jq
 install_slack
 update_git
 install_node
