@@ -180,6 +180,7 @@ header "Webapp"
 kv "WEBAPP_ROOT" "$WEBAPP_ROOT"
 if [ -d "$WEBAPP_ROOT" ]; then
     kv_multiline "make check_setup" "$( (cd "$WEBAPP_ROOT" && make check_setup) )"
+    kv "Current Branch Trails Master by" "$(git --git-dir $WEBAPP_ROOT/.git rev-list --left-only --count origin/master...HEAD) commits"
 else
     kv "!!! WARNING !!!" "$WEBAPP_ROOT could not be found!"
 fi
