@@ -23,6 +23,10 @@ DEVTOOLS_DIR="$REPOS_DIR/devtools"
 trap exit_warning EXIT   # from shared-functions.sh
 
 install_java() {
+
+    update "Installing JAVA"
+    ######
+
     # On 16.04LTS and some later versions we have openjdk-8, so install it directly.
     sudo apt-get install -y openjdk-8-jdk || {
         # On more recent versions, use the Azul Systems binary distribution of OpenJDK 8,
@@ -40,6 +44,10 @@ install_java() {
 }
 
 install_go() {
+    
+    update "Installing golang"
+    ######
+    
     if ! has_recent_go; then   # has_recent_go is from shared-functions.sh
         # This PPA is needed for ubuntus <20 but not >=20
         # (and it doesn't install for them anyway)
@@ -49,13 +57,88 @@ install_go() {
         # Let's link that to somewhere likely to be on $PATH
         sudo cp -sf /usr/lib/"go-$DESIRED_GO_VERSION"/bin/* /usr/local/bin/
     else
-        echo "golang already installed"
+        update "golang already installed"
     fi
+}
+
+install_packages() {
+    # This is needed for ubuntu >=20, but not prior ones.
+    sudo apt-get install -y python-is-python2 || true
+
+    update "Installing pip 19.3.1"
+    ######
+    
+    curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py
+    sudo python2 get-pip.py
+    # Delete get-pip.py after we're finish running it.
+    rm -f get-pip.py
+    # Match webapp's version version.
+    sudo pip install pip==19.3.1
+
+    update "Install virtualenv and pychecker manually"
+    ######
+    
+    # ubuntu dropped support for them in ubuntu >=20 (since they're python2)
+    pip_installed_pacakges=`pip list`
+   
+    if [[ $pip_installed_packages != *"virtualenv"* ]]; then
+        sudo pip install virtualenv==20.0.23
+    fi
+    
+    if [[ $pip_installed_packages != *"pychecker"* ]]; then
+       sudo pip install http://sourceforge.net/projects/pychecker/files/pychecker/0.8.19/pychecker-0.8.19.tar.gz/download
+    fi
+      
+    # Needed to develop at Khan: 
+   
+    update "Installing:"    
+    update "python"
+    update "php is needed for phabricator"
+    update "lib{freetype6{,-dev},{png,jpeg}-dev} are needed for PIL"
+    update "imagemagick is needed for image resizing and other operations"
+    update "lib{xml2,xslt}-dev are needed for lxml"
+    update "libyaml-dev is needed for pyyaml"
+    update "libncurses-dev and libreadline-dev are needed for readline"
+    update "nginx is used as a devserver proxy that serves static files"
+    update "redis is needed to run memorystore on dev"
+    ######
+    
+    # TODO(benkraft): Pull the version we want from webapp somehow.
+    
+    sudo apt-get install -y \
+        python-dev \
+        python-mode python-setuptools \
+        libfreetype6 libfreetype6-dev libpng-dev libjpeg-dev \
+        imagemagick \
+        libxslt1-dev \
+        libyaml-dev \
+        libncurses-dev libreadline-dev \
+        nginx \
+        redis-server \
+        unzip \
+        jq
+
+    # There are two different php packages, depending on if you're on Ubuntu
+    # 14.04 LTS or 16.04 LTS, and neither version has both.  So we just try
+    # both of them.  In 16.04+, php-xml is also a separate package, which we
+    # need too.
+    
+    update "Installing php"
+    ######
+    
+    sudo apt install -y php-cli php-curl php-xml || sudo apt-get install -y php5-cli php5-curl
+
+    # We use java for our google cloud dataflow jobs that live in webapp
+    # (as well as in khan-linter for linting those jobs)
+    install_java
+
+    # We use go for our code, going forward
+    install_go
 }
 
 # NOTE: if you add a package here, check if you should also add it
 # to webapp's Dockerfile.
-install_packages() {
+install_packages2() {
     updated_apt_repo=""
 
     # This is needed to get the add-apt-repository command.
@@ -108,58 +191,7 @@ EOF
     if [ -n "$updated_apt_repo" ]; then
         sudo apt-get update -qq -y || true
     fi
-
-    # This is needed for ubuntu >=20, but not prior ones.
-    sudo apt-get install -y python-is-python2 || true
-
-    # Install pip manually.
-    curl https://bootstrap.pypa.io/2.7/get-pip.py --output get-pip.py
-    sudo python2 get-pip.py
-    # Delete get-pip.py after we're finish running it.
-    rm -f get-pip.py
-    # Match webapp's version version.
-    sudo pip install pip==19.3.1
-
-    # Install virtualenv and pychecker manually; ubuntu
-    # dropped support for them in ubuntu >=20 (since they're python2)
-    sudo pip install virtualenv==20.0.23
-    sudo pip install http://sourceforge.net/projects/pychecker/files/pychecker/0.8.19/pychecker-0.8.19.tar.gz/download
-
-    # Needed to develop at Khan: git, python, node (js).
-    # php is needed for phabricator
-    # lib{freetype6{,-dev},{png,jpeg}-dev} are needed for PIL
-    # imagemagick is needed for image resizing and other operations
-    # lib{xml2,xslt}-dev are needed for lxml
-    # libyaml-dev is needed for pyyaml
-    # libncurses-dev and libreadline-dev are needed for readline
-    # nginx is used as a devserver proxy that serves static files
-    # nodejs is used for various frontendy stuff in webapp, as well as our js
-    #   services. We standardize on version 12 (the latest version suppported
-    #   on appengine standard).
-    # redis is needed to run memorystore on dev
-    # TODO(benkraft): Pull the version we want from webapp somehow.
-    # curl for various scripts (including setup.sh)
-    sudo apt-get install -y git \
-        python-dev \
-        python-mode python-setuptools \
-        libfreetype6 libfreetype6-dev libpng-dev libjpeg-dev \
-        imagemagick \
-        libxslt1-dev \
-        libyaml-dev \
-        libncurses-dev libreadline-dev \
-        nodejs=12* \
-        nginx \
-        redis-server \
-        curl \
-       unzip \
-        jq
-
-    # There are two different php packages, depending on if you're on Ubuntu
-    # 14.04 LTS or 16.04 LTS, and neither version has both.  So we just try
-    # both of them.  In 16.04+, php-xml is also a separate package, which we
-    # need too.
-    sudo apt install -y php-cli php-curl php-xml || sudo apt-get install -y php5-cli php5-curl
-
+   
     # We need npm 6 or greater to support node12.  That's the default
     # for nodejs, but we may have overridden it before in a way that
     # makes it impossible to upgrade, so we reinstall nodejs if our
@@ -202,12 +234,6 @@ EOF
     # Needed to install printer drivers, and to use the printer scanner
     sudo apt-get install -y apparmor-utils xsane
 
-    # We use java for our google cloud dataflow jobs that live in webapp
-    # (as well as in khan-linter for linting those jobs)
-    install_java
-
-    # We use go for our code, going forward
-    install_go
 }
 
 install_protoc() {
@@ -241,6 +267,9 @@ install_watchman() {
 }
 
 install_postgresql() {
+    update "Installing postgresql"
+    ######
+
     # Instructions taken from
     # https://pgdash.io/blog/postgres-11-getting-started.html
     # Postgres 11 is not available in 18.04, so we need to add the pg apt repository.
@@ -275,32 +304,31 @@ config_inotify() {
     echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
 }
 
-echo
-echo "Running Khan Installation Script 1.1"
-echo
+update "Running Khan Installation Script 1.1"
+
 # We grep -i to have a good chance of catching flavors like Xubuntu.
 if ! lsb_release -is 2>/dev/null | grep -iq ubuntu ; then
-    echo "This script is mostly tested on Ubuntu;"
-    echo "other distributions may or may not work."
+    update "This script is mostly tested on Ubuntu;"
+    update "other distributions may or may not work."
 fi
 
 if ! echo "$SHELL" | grep -q '/bash$' ; then
-    echo
-    echo "It looks like you're using a shell other than bash!"
-    echo "Other shells are not officially supported.  Most things"
-    echo "should work, but dev-support help is not guaranteed."
+    update "It looks like you're using a shell other than bash!"
+    update "Other shells are not officially supported.  Most things"
+    update "should work, but dev-support help is not guaranteed."
 fi
 
 # Run sudo once at the beginning to get the necessary permissions.
-echo "This setup script needs your password to install things as root."
+update "This setup script needs your password to install things as root."
 sudo sh -c 'echo Thanks'
 
 install_packages
 install_protoc
 install_watchman
-setup_clock
+# setup_clock
 config_inotify
 install_postgresql
+
 # TODO (boris): Setup pyenv (see mac_setup:install_python_tools)
 # https://opencafe.readthedocs.io/en/latest/getting_started/pyenv/
 
