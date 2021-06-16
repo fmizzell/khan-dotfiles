@@ -53,20 +53,19 @@ add_fatal_error() {
 }
 
 check_dependencies() {
-    echo "Checking system dependencies"
+    update "Checking system dependencies"
+    ######
+
     # We need git >=1.7.11 for '[push] default=simple'.
     if ! git --version | grep -q -e 'version 1.7.1[1-9]' \
                                  -e 'version 1.[89]' \
                                  -e 'version 2'; then
-        echo "Must have git >= 1.8.  See http://git-scm.com/downloads"
-        exit 1
+        err_and_exit "Must have git >= 1.8.  See http://git-scm.com/downloads"
     fi
 
     # You need to have run the setup to install binaries: node, npm/etc.
     if ! npm --version >/dev/null; then
-        echo "You must install binaries before running $0.  See"
-        echo "   https://khanacademy.atlassian.net/wiki/x/VgKiC"
-        exit 1
+        err_and_exit "You must install binaries before running $0. See https://khanacademy.atlassian.net/wiki/x/VgKiC"
     fi
 }
 
@@ -262,8 +261,9 @@ create_pg_databases() {
 
 # Make sure we store userinfo so we can pass appropriately when ka-cloning.
 update_userinfo() {
-    echo "Updating your git user info"
-
+    update "Updating your git user info"
+    ######
+    
     # check if git user.name exists anywhere, if not, set that globally
     set +e
     gitname=$(git config user.name)
@@ -322,15 +322,15 @@ check_dependencies
 
 # the order of these individually doesn't matter but they should come first
 update_userinfo
-install_dotfiles
+#install_dotfiles
 # the order for these is (mostly!) important, beware
-clone_repos
-install_and_setup_gcloud
-install_deps        # pre-reqs: clone_repos, install_and_setup_gcloud
-install_hooks       # pre-req: clone_repos
-setup_arc           # pre-req: clone_repos
-download_db_dump    # pre-req: install_deps
-create_pg_databases # pre-req: install_deps
+#clone_repos
+#install_and_setup_gcloud
+#install_deps        # pre-reqs: clone_repos, install_and_setup_gcloud
+#install_hooks       # pre-req: clone_repos
+#setup_arc           # pre-req: clone_repos
+#download_db_dump    # pre-req: install_deps
+#create_pg_databases # pre-req: install_deps
 
 
 echo

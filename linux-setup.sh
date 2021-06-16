@@ -136,6 +136,15 @@ install_packages() {
     install_go
 }
 
+install_nodejs() {
+    update "Installing NodeJS"
+    #command -v nvm >/dev/null 2>&1 || { 
+        curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
+        . $HOME/.nvm/nvm.sh
+	nvm install v12
+    #}
+}
+
 # NOTE: if you add a package here, check if you should also add it
 # to webapp's Dockerfile.
 install_packages2() {
@@ -323,6 +332,7 @@ update "This setup script needs your password to install things as root."
 sudo sh -c 'echo Thanks'
 
 install_packages
+install_nodejs
 install_protoc
 install_watchman
 # setup_clock

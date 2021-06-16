@@ -7,7 +7,7 @@ install:
 	@echo "$(shell date): Running make install" >> $(MAKE_LOGFILE)
 	./git_sync.sh 2>&1 | tee -a $(MAKE_LOGFILE)
 	$(MAKE) os-install
-	# $(MAKE) common-install
+	$(MAKE) common-install
 	@echo "***  YOU MUST REBOOT **IF** this was   ***"
 	@echo "***  the first time you've setup       ***"
 	@echo "***  khan-dotfiles (i.e. if you are    ***"
