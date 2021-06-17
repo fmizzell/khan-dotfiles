@@ -138,11 +138,16 @@ install_packages() {
 
 install_nodejs() {
     update "Installing NodeJS"
-    #command -v nvm >/dev/null 2>&1 || { 
+    ######
+
+    if [ ! -f "$HOME"/.nvm/nvm.sh ] 
+    then
         curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
         . $HOME/.nvm/nvm.sh
 	nvm install v12
-    #}
+    else
+        update "NodeJS already installed"
+    fi    
 }
 
 # NOTE: if you add a package here, check if you should also add it
@@ -341,6 +346,10 @@ install_postgresql
 
 # TODO (boris): Setup pyenv (see mac_setup:install_python_tools)
 # https://opencafe.readthedocs.io/en/latest/getting_started/pyenv/
+
+update "Setting a virtual environment for python"
+VIRTUAL_ENV="$HOME/.virtualenv/khan27"
+create_and_activate_virtualenv "$VIRTUAL_ENV"
 
 "$DEVTOOLS_DIR"/khan-dotfiles/bin/edit-system-config.sh
 

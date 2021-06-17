@@ -48,8 +48,7 @@ add_warning() {
 }
 
 add_fatal_error() {
-    echo "FATAL ERROR: $*"
-    exit 1
+    err_and_exit "FATAL ERROR: $*"
 }
 
 check_dependencies() {
@@ -70,7 +69,9 @@ check_dependencies() {
 }
 
 install_dotfiles() {
-    echo "Installing and updating dotfiles (.bashrc, etc)"
+    update "Installing and updating dotfiles (.bashrc, etc)"
+    ######
+
     # Most dotfiles are installed as symlinks.
     # (But we ignore .git/.arc*/etc which are actually part of the repo!)
     #
@@ -322,9 +323,9 @@ check_dependencies
 
 # the order of these individually doesn't matter but they should come first
 update_userinfo
-#install_dotfiles
+install_dotfiles
 # the order for these is (mostly!) important, beware
-#clone_repos
+clone_repos
 #install_and_setup_gcloud
 #install_deps        # pre-reqs: clone_repos, install_and_setup_gcloud
 #install_hooks       # pre-req: clone_repos
