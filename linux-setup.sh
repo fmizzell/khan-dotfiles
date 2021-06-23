@@ -24,7 +24,7 @@ trap exit_warning EXIT   # from shared-functions.sh
 
 install_java() {
 
-    update "Installing JAVA"
+    step "Installing Java"
     ######
 
     # On 16.04LTS and some later versions we have openjdk-8, so install it directly.
@@ -45,7 +45,7 @@ install_java() {
 
 install_go() {
     
-    update "Installing golang"
+    step "Installing Golang"
     ######
     
     if ! has_recent_go; then   # has_recent_go is from shared-functions.sh
@@ -65,7 +65,7 @@ install_packages() {
     # This is needed for ubuntu >=20, but not prior ones.
     sudo apt-get install -y python-is-python2 || true
 
-    update "Installing pip 19.3.1"
+    step "Installing pip 19.3.1"
     ######
     
     curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py
@@ -75,7 +75,7 @@ install_packages() {
     # Match webapp's version version.
     sudo pip install pip==19.3.1
 
-    update "Install virtualenv and pychecker manually"
+    step "Install virtualenv and pychecker manually"
     ######
     
     # ubuntu dropped support for them in ubuntu >=20 (since they're python2)
@@ -91,7 +91,9 @@ install_packages() {
       
     # Needed to develop at Khan: 
    
-    update "Installing:"    
+    step "Installing python, php, nginx, redix, and more"    
+    ######
+    
     update "python"
     update "php is needed for phabricator"
     update "lib{freetype6{,-dev},{png,jpeg}-dev} are needed for PIL"
@@ -101,7 +103,6 @@ install_packages() {
     update "libncurses-dev and libreadline-dev are needed for readline"
     update "nginx is used as a devserver proxy that serves static files"
     update "redis is needed to run memorystore on dev"
-    ######
     
     # TODO(benkraft): Pull the version we want from webapp somehow.
     
@@ -123,7 +124,7 @@ install_packages() {
     # both of them.  In 16.04+, php-xml is also a separate package, which we
     # need too.
     
-    update "Installing php"
+    step "Installing php extensions"
     ######
     
     sudo apt install -y php-cli php-curl php-xml || sudo apt-get install -y php5-cli php5-curl
@@ -137,7 +138,7 @@ install_packages() {
 }
 
 install_nodejs() {
-    update "Installing NodeJS"
+    step "Installing NodeJS"
     ######
 
     if [ ! -f "$HOME"/.nvm/nvm.sh ] 
@@ -148,6 +149,20 @@ install_nodejs() {
     else
         update "NodeJS already installed"
     fi    
+}
+
+install_local_ca() {
+  step "Installing local CA with mkcert"
+  sudo apt install libnss3-tools
+  wget https://github.com/FiloSottile/mkcert/releases/download/v1.4.3/mkcert-v1.4.3-linux-amd64
+  sudo cp mkcert-v1.4.3-linux-amd64 /usr/local/bin/mkcert
+  sudo chmod +x /usr/local/bin/mkcert
+  mkcert -install
+}
+
+install_rust() {
+    step "Installing Rust"
+    curl https://sh.rustup.rs -sSf | sh
 }
 
 # NOTE: if you add a package here, check if you should also add it
@@ -338,6 +353,7 @@ sudo sh -c 'echo Thanks'
 
 install_packages
 install_nodejs
+install_local_ca
 install_protoc
 install_watchman
 # setup_clock

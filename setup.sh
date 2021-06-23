@@ -215,13 +215,21 @@ install_deps() {
     pip2 install -q virtualenv==20.0.23
 
     # Used by various infra projects for managing python3 environment
-    echo "Installing pipenv"
-    pip3 install -q pipenv
+    #echo "Installing pipenv"
+    #pip3 install -q pipenv
 
     create_and_activate_virtualenv "$ROOT/.virtualenv/khan27"
 
     # Need to install yarn first before run `make install_deps`
     # in webapp.
+    
+    # Load nvm if available
+    if [ -f "$HOME"/.nvm/nvm.sh ]
+    then
+        update "Sourcing nvm"
+        . $HOME/.nvm/nvm.sh
+    fi
+    
     echo "Installing yarn"
     if ! which yarn >/dev/null 2>&1; then
         if [[ -n "${IS_MAC}" ]]; then
@@ -229,7 +237,7 @@ install_deps() {
             npm install -g yarn
         else
             # Linux requires sudo permissions
-            sudo npm install -g yarn
+            npm install -g yarn
         fi
     fi
 
@@ -326,12 +334,12 @@ update_userinfo
 install_dotfiles
 # the order for these is (mostly!) important, beware
 clone_repos
-#install_and_setup_gcloud
-#install_deps        # pre-reqs: clone_repos, install_and_setup_gcloud
-#install_hooks       # pre-req: clone_repos
-#setup_arc           # pre-req: clone_repos
-#download_db_dump    # pre-req: install_deps
-#create_pg_databases # pre-req: install_deps
+install_and_setup_gcloud
+install_deps        # pre-reqs: clone_repos, install_and_setup_gcloud
+install_hooks       # pre-req: clone_repos
+setup_arc           # pre-req: clone_repos
+download_db_dump    # pre-req: install_deps
+create_pg_databases # pre-req: install_deps
 
 
 echo
