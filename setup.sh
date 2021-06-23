@@ -48,30 +48,30 @@ add_warning() {
 }
 
 add_fatal_error() {
-    echo "FATAL ERROR: $*"
-    exit 1
+    err_and_exit "FATAL ERROR: $*"
 }
 
 check_dependencies() {
-    echo "Checking system dependencies"
+    update "Checking system dependencies"
+    ######
+
     # We need git >=1.7.11 for '[push] default=simple'.
     if ! git --version | grep -q -e 'version 1.7.1[1-9]' \
                                  -e 'version 1.[89]' \
                                  -e 'version 2'; then
-        echo "Must have git >= 1.8.  See http://git-scm.com/downloads"
-        exit 1
+        err_and_exit "Must have git >= 1.8.  See http://git-scm.com/downloads"
     fi
 
     # You need to have run the setup to install binaries: node, npm/etc.
     if ! npm --version >/dev/null; then
-        echo "You must install binaries before running $0.  See"
-        echo "   https://khanacademy.atlassian.net/wiki/x/VgKiC"
-        exit 1
+        err_and_exit "You must install binaries before running $0. See https://khanacademy.atlassian.net/wiki/x/VgKiC"
     fi
 }
 
 install_dotfiles() {
-    echo "Installing and updating dotfiles (.bashrc, etc)"
+    update "Installing and updating dotfiles (.bashrc, etc)"
+    ######
+
     # Most dotfiles are installed as symlinks.
     # (But we ignore .git/.arc*/etc which are actually part of the repo!)
     #
@@ -215,13 +215,21 @@ install_deps() {
     pip2 install -q virtualenv==20.0.23
 
     # Used by various infra projects for managing python3 environment
-    echo "Installing pipenv"
-    pip3 install -q pipenv
+    #echo "Installing pipenv"
+    #pip3 install -q pipenv
 
     create_and_activate_virtualenv "$ROOT/.virtualenv/khan27"
 
     # Need to install yarn first before run `make install_deps`
     # in webapp.
+    
+    # Load nvm if available
+    if [ -f "$HOME"/.nvm/nvm.sh ]
+    then
+        update "Sourcing nvm"
+        . $HOME/.nvm/nvm.sh
+    fi
+    
     echo "Installing yarn"
     if ! which yarn >/dev/null 2>&1; then
         if [[ -n "${IS_MAC}" ]]; then
@@ -229,7 +237,7 @@ install_deps() {
             npm install -g yarn
         else
             # Linux requires sudo permissions
-            sudo npm install -g yarn
+            npm install -g yarn
         fi
     fi
 
@@ -262,8 +270,9 @@ create_pg_databases() {
 
 # Make sure we store userinfo so we can pass appropriately when ka-cloning.
 update_userinfo() {
-    echo "Updating your git user info"
-
+    update "Updating your git user info"
+    ######
+    
     # check if git user.name exists anywhere, if not, set that globally
     set +e
     gitname=$(git config user.name)

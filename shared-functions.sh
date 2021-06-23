@@ -1,5 +1,25 @@
 bad_usage_get_yn_input=100
 
+# Colors
+# https://stackoverflow.com/questions/4332478/read-the-current-text-color-in-a-xterm/4332530#4332530
+
+BLACK=$(tput setaf 0)
+RED=$(tput setaf 1)
+GREEN=$(tput setaf 2)
+YELLOW=$(tput setaf 3)
+LIME_YELLOW=$(tput setaf 190)
+POWDER_BLUE=$(tput setaf 153)
+BLUE=$(tput setaf 4)
+MAGENTA=$(tput setaf 5)
+CYAN=$(tput setaf 6)
+WHITE=$(tput setaf 7)
+BRIGHT=$(tput bold)
+NORMAL=$(tput sgr0)
+BLINK=$(tput blink)
+REVERSE=$(tput smso)
+UNDERLINE=$(tput smul)
+
+
 # Replacement for clone_repo() function using ka-clone tool for local config
 # If run on an existing repository, will *update* and do --repair
 # Arguments:
@@ -28,17 +48,23 @@ kaclone_repo() {
     )
 }
 
+# Print step info in yellow.
+step() {
+    echo ""
+    printf "${YELLOW}$1${NORMAL}\n\n"
+}
+
 # Print update in blue.
 # $1: update message
 update() {
-    printf "\e[0;34m$1\e[0m\n"
+    printf "${BLUE}$1${NORMAL}\n"
 }
 
 # Print error in red and exit.
 # $1: error message
 # TODO(hannah): Factor out message-printing functions from mac-setup.sh.
 err_and_exit() {
-    printf "\e[0;31m$1\e[0m\n"
+    printf "${RED}$1${NORMAL}\n"
     exit 1
 }
 
@@ -135,7 +161,7 @@ install_protoc_common() {
 }
 
 DESIRED_GO_MAJOR_VERISON=1
-DESIRED_GO_MINOR_VERISON=14
+DESIRED_GO_MINOR_VERISON=15
 DESIRED_GO_VERSION="$DESIRED_GO_MAJOR_VERISON.$DESIRED_GO_MINOR_VERISON"
 
 # Evaluates to truthy if go is installed and
